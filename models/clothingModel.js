@@ -19,13 +19,51 @@ const clothingSchema = new mongoose.Schema(
 			default: 0,
 			select: false,
 		},
-		owner: {
-			type: mongoose.Schema.Types.ObjectId,
-			ref: 'User',
-			required: true,
-		},
+		numViews: {
+			type: Number,
+			default: 0,
+		  },
+		  isLiked: {
+			type: Boolean,
+			default: false,
+		  },
+		  isDisliked: {
+			type: Boolean,
+			default: false,
+		  },
+		  likes: [
+			{
+			  type: mongoose.Schema.Types.ObjectId,
+			  ref: "User",
+			},
+		  ],
+		  dislikes: [
+			{
+			  type: mongoose.Schema.Types.ObjectId,
+			  ref: "User",
+			},
+		  ],
+	  
+		// owner: {
+		// 	type: mongoose.Schema.Types.ObjectId,
+		// 	ref: 'User',
+		// 	required: true,
+		// },
+		author: {
+			type: String,
+			default: "Admin",
+		  },
+		  images: [],
 	},
-	{ timestamps: true }
+	{
+		toJSON: {
+		  virtuals: true,
+		},
+		toObject: {
+		  virtuals: true,
+		},
+		timestamps: true,
+	  }
 );
 
 module.exports = mongoose.model('Clothing', clothingSchema);

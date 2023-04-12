@@ -45,7 +45,16 @@ const getAllClothOrders = AsyncHandler(async (req, res) => {
 const getAClothOrder = AsyncHandler(async (req, res) => {
     const { id } = req.params;
     try {
-        const clothOrder = await Clothing.findById(id);
+        const clothOrder = await Clothing.findById(id)
+        .populate("likes")
+        .populate("dislikes");
+      const updateViews = await Clothing.findByIdAndUpdate(
+        id,
+        {
+          $inc: { numViews: 1 },
+        },
+        { new: true }
+      );
         if(clothOrder){
             res.json({
                 clothOrder,
