@@ -4,6 +4,8 @@ const { generateToken } = require('../config/jwtToken');
 const { validateMongoDbId } = require('../utils/validateMongoId');
 const { generateRefreshToken } = require('../config/refreshToken');
 const jwt = require('jsonwebtoken');
+const sendEmail = require('./emailCtrl')
+const crypto = require("crypto");
 
 // Create/register a new user
 const createUser = asyncHandler(async (req, res) => {
@@ -62,7 +64,7 @@ const getAllUsers = asyncHandler(async (req, res) => {
 	}
 });
 
-// To get a single uswer
+// To get a single user
 
 const getAUser = asyncHandler(async (req, res) => {
 	try {
@@ -81,7 +83,7 @@ const updatedUser = asyncHandler(async (req, res) => {
 	//This is the user who has a token or admin(I might just remove admin).
 	const { _id } = req.user;
 	// console.log(req.user);
-	validateMongoDbId(id);
+	validateMongoDbId(_id);
 	try {
 		const updateAUser = await User.findByIdAndUpdate(
 			_id,
@@ -187,6 +189,46 @@ console.log('User logged out successfully!!');
 return res.sendStatus(204); 
 });
 
+// To update password
+const updatePassword = asyncHandler(async (req, res) => {
+	const { _id } = req.user;
+	const {password } = req.body;
+	validateMongoDbId(_id);
+	const user = await User.findById(_id);
+	if(password){
+		user.password = password;
+		const updatedPassword = await user.save()
+		res.json(updatedPassword)
+	} else {
+		res.json(user)
+	}
+});
+
+// To generate forgotPassword Token
+const forgotPasswordToken = asyncHandler(async (req, res) => {
+	const { email } = req.body;
+	console.log(email);
+	const user = await User.findOne({email} );
+	if (!user) throw new Error('No user with this email');
+	try {
+		const token = await user.createPasswordResetToken();
+		// const token = crypto.randomBytes(32).toString('hex');
+
+		await user.save();
+		const resetURL = `Hi Please follow this link to reset your password. This link is valid for 10 minutes only.<a href='http://localhost:4001/api/user/reset-password/${token}'>Click Here</>`
+		const data = {
+			to: email,
+			text: 'Laundry_App User',
+			subject: 'Forgot Password Link',
+			html: resetURL,
+		} 
+		sendEmail(data);
+		res.json(token)
+	} catch (error) {
+		throw new Error(error);
+	}
+});
+
 module.exports = {
 	createUser,
 	loginUser,
@@ -197,5 +239,7 @@ module.exports = {
 	unblockUser,
 	blockUser,
 	refreshTokenHandler,
-	logoutUser
+	logoutUser,
+	updatePassword,
+	forgotPasswordToken,
 };

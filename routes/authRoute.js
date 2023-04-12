@@ -10,12 +10,17 @@ const {
     unblockUser,
     blockUser,
 	refreshTokenHandler,
-	logoutUser
+	logoutUser,
+	updatePassword,
+	forgotPasswordToken,
 } = require('../controller/userCtrl');
 const { authMiddleware, isAdmin } = require('../middlewares/authMiddleware');
+const crypto = require("crypto");
 
-router.get('/refresh',refreshTokenHandler);
 router.post('/register', createUser);
+router.post('/forgot-password-token', forgotPasswordToken);
+router.get('/refresh',refreshTokenHandler);
+router.put('/password',authMiddleware ,updatePassword);
 router.post('/login', loginUser);
 router.post('/logout', logoutUser);
 router.get('/all-users', getAllUsers);

@@ -14,6 +14,10 @@ const errorHandler = (err, req, res, next) => {
         message: err?.message,
         stack: err?.stack,
     });
+    // To avoid sending response twice.
+    if (res.headersSent) {
+        return next(err);
+      }
 }
 
 module.exports = {notFound, errorHandler}; 
