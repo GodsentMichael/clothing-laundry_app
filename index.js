@@ -5,8 +5,10 @@ const bodyParser = require('body-parser');
 const authRouter = require('./routes/authRoute');
 const { notFound, errorHandler } = require('./middlewares/errorHandler');
 const cookieParser = require('cookie-parser');
-const orderRouter = require('./routes/orderRoutes');
+const orderRouter = require('./routes/laundryOrderRoutes');
 const clothingRouter = require('./routes/clothingRoute');
+const clothCategoryRouter = require('./routes/clothCategoryRoute');
+const laundryCategoryRouter = require('./routes/laundryCategoryRoutes');
 const morgan = require('morgan');
 dotenv = require('dotenv').config();
 const PORT = process.env.PORT || 4000;
@@ -20,6 +22,8 @@ app.use(cookieParser())
 app.use('/api/user', authRouter);
 app.use('/api/order', orderRouter);
 app.use('/api/clothing', clothingRouter);
+app.use('/api/category', clothCategoryRouter);
+app.use('/api/laundry-category' , laundryCategoryRouter)
 
 app.use(notFound)
 app.use(errorHandler )

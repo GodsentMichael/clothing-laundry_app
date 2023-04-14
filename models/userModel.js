@@ -44,7 +44,7 @@ cart:{
 },
 address:[{type:ObjectId, ref: "Address"}],
 
-wishlist:[{type:ObjectId, ref: "Product"}],
+wishlist:[{type:ObjectId, ref: "Clothing"}],
 
 refreshToken: {
     type: String

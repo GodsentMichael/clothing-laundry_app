@@ -22,48 +22,54 @@ const clothingSchema = new mongoose.Schema(
 		numViews: {
 			type: Number,
 			default: 0,
-		  },
-		  isLiked: {
+		},
+		isLiked: {
 			type: Boolean,
 			default: false,
-		  },
-		  isDisliked: {
+		},
+		isDisliked: {
 			type: Boolean,
 			default: false,
-		  },
-		  likes: [
+		},
+		likes: [
 			{
-			  type: mongoose.Schema.Types.ObjectId,
-			  ref: "User",
+				type: mongoose.Schema.Types.ObjectId,
+				ref: 'User',
 			},
-		  ],
-		  dislikes: [
+		],
+		dislikes: [
 			{
-			  type: mongoose.Schema.Types.ObjectId,
-			  ref: "User",
+				type: mongoose.Schema.Types.ObjectId,
+				ref: 'User',
 			},
-		  ],
-	  
-		// owner: {
-		// 	type: mongoose.Schema.Types.ObjectId,
-		// 	ref: 'User',
-		// 	required: true,
-		// },
-		author: {
+		],
+		owner: {
+			type: mongoose.Schema.Types.ObjectId,
+			ref: 'User',
+		},
+		ratings: [
+			{
+				star: Number,
+				comment: String,
+				postedby: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+			},
+		],
+		totalRating: {
 			type: String,
-			default: "Admin",
-		  },
-		  images: [],
+			default: 0,
+			// select: false,
+		},
+		images: [],
 	},
 	{
 		toJSON: {
-		  virtuals: true,
+			virtuals: true,
 		},
 		toObject: {
-		  virtuals: true,
+			virtuals: true,
 		},
 		timestamps: true,
-	  }
+	}
 );
 
 module.exports = mongoose.model('Clothing', clothingSchema);

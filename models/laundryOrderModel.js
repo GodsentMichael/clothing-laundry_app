@@ -46,6 +46,10 @@ const laundryOrderSchema = new mongoose.Schema({
 		enum: ['pickup', 'delivery'],
 		default: 'pickup',
 	},
+	numViews: {
+		type: Number,
+		default: 0,
+	},
 	price: { type: Number, required: true },
 	payment: {
 		type: mongoose.Schema.Types.ObjectId,

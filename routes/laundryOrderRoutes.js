@@ -1,5 +1,5 @@
 const express = require('express');
-const { createLaundryOrder, getALaundryOrder, getAllLaundryOrders, updateLaundryOrder, deleteLaundryOrder } = require('../controller/orderCtrl');
+const { createLaundryOrder, getALaundryOrder, getAllLaundryOrders, updateLaundryOrder, deleteLaundryOrder } = require('../controller/laundryOrderCtrl');
 const router = express.Router();
 const {isAdmin, authMiddleware} = require('../middlewares/authMiddleware');
 
