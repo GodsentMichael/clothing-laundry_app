@@ -2,7 +2,10 @@ const User = require('../models/userModel');
 const asyncHandler = require('express-async-handler');
 const slugify = require('slugify');
 const Clothing = require('../models/clothingModel');
+const path = require('path');
+const cloudinaryUploadImg = require('../utils/cloudinary');
 const { validateMongoDbId } = require('../utils/validateMongoId');
+const dotenv = require('dotenv').config();
 
 // To create Fabrics Order.
 const createClothOrder = asyncHandler(async (req, res) => {
@@ -333,6 +336,40 @@ const ratingHandler = asyncHandler(async (req, res) => {
 	}
 });
 
+// To Upload Cloth Images
+
+const uploadImages = asyncHandler(async (req, res) => {
+	const {id} = req.params;
+	try {
+		const uploader = async (path) => await cloudinaryUploadImg(path, "images");
+		const urls = [];
+		const files = req.files;
+		for (const file of files) {
+			const {path} = file;
+			const newPath = await uploader(path);
+			urls.push(newPath);
+		}
+		const findCloth = await Clothing.findByIdAndUpdate(
+			id,
+			{
+				images: urls.map((file) => {return file}),
+			},
+			{ new: true }
+		);
+		if (findCloth) {
+			res.json({message: 'Images uploaded', findCloth});
+		} else {
+			res.status(400).json({message: 'Failed to upload images'});
+		}	
+	} catch (error) {
+		console.error(error);
+		res.status(500).json({message: 'Internal server error'});
+	}
+});
+
+
+  
+
 module.exports = {
 	createClothOrder,
 	getAllClothOrders,
@@ -343,4 +380,5 @@ module.exports = {
 	dislikeClothing,
 	addToWishlist,
 	ratingHandler,
+	uploadImages
 };

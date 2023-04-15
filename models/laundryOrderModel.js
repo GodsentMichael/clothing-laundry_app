@@ -56,6 +56,7 @@ const laundryOrderSchema = new mongoose.Schema({
 		ref: 'Payment',
 		required: true,
 	},
+	images: [],
 	
 },
 { timestamps: true},

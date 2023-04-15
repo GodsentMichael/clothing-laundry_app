@@ -59,6 +59,7 @@ const clothingSchema = new mongoose.Schema(
 			default: 0,
 			// select: false,
 		},
+		
 		images: [],
 	},
 	{

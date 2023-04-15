@@ -9,8 +9,10 @@ const orderRouter = require('./routes/laundryOrderRoutes');
 const clothingRouter = require('./routes/clothingRoute');
 const clothCategoryRouter = require('./routes/clothCategoryRoute');
 const laundryCategoryRouter = require('./routes/laundryCategoryRoutes');
+const promoCodeRouter = require('./routes/promoCodeRoute');
 const morgan = require('morgan');
-dotenv = require('dotenv').config();
+const dotenv = require("dotenv").config();
+const cloudinary = require('cloudinary').v2;
 const PORT = process.env.PORT || 4000;
 dbConnect();
 
@@ -24,6 +26,7 @@ app.use('/api/order', orderRouter);
 app.use('/api/clothing', clothingRouter);
 app.use('/api/category', clothCategoryRouter);
 app.use('/api/laundry-category' , laundryCategoryRouter)
+app.use('/api/promo-code', promoCodeRouter)
 
 app.use(notFound)
 app.use(errorHandler )
