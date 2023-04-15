@@ -5,22 +5,89 @@ const { validateMongoDbId } = require('../utils/validateMongoId');
 const { generateRefreshToken } = require('../config/refreshToken');
 const jwt = require('jsonwebtoken');
 const sendEmail = require('./emailCtrl')
+const path = require('path');
 const crypto = require("crypto");
+const multer = require('multer');
+const cloudinary = require('cloudinary').v2;
 
-// Create/register a new user
-const createUser = asyncHandler(async (req, res) => {
-	// Confirm if user already exists.
-	const email = req.body.email;
-	const findUser = await User.findOne({ email: email });
-	// const findUser = await User.findOne(email);
-	if (!findUser) {
-		// Then create a new user.
-		const newUser = await User.create(req.body);
-		res.json(newUser);
-	} else {
-		throw new Error('User already exists');
-	}
+// Set up Multer storage engine to store uploaded images temporarily on the server.
+const storage = multer.diskStorage({
+	destination: function (req, file, cb) {
+		cb(null, path.join(__dirname,  "../public/images/"));
+	},
+	filename: function (req, file, cb) {
+		const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+		cb(null, file.fieldname + '-' + uniqueSuffix + '.jpeg');
+	},
 });
+const multerFilter = (req, file, cb) => {
+	if (file.mimetype.startsWith("image")) {
+		cb(null, true);
+	} else {
+		cb({ message: 'Unsuported file format' }, false);
+	}
+};
+const upload = multer({
+    storage: storage,
+    fileFilter: multerFilter,
+    limits: { fileSize: 1000000 },
+  });
+// const upload = multer({ storage: storage });
+
+// Set up Cloudinary configuration to upload the image to Cloudinary.
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+const cloudinaryUploadImg = async (fileToUploads) => {
+	try {
+		const result = await cloudinary.uploader.upload(fileToUploads, {
+			resource_type: 'auto',
+		});
+		console.log(result);
+		return {
+			url: result?.secure_url,
+			asset_id: result?.asset_id,
+			public_id: result?.public_id,
+		};
+	} catch (error) {
+		console.error(error);
+		throw new Error('Error uploading image to Cloudinary');
+	}
+};
+
+// Register a new user with profile image
+const createUser = asyncHandler(async (req, res) => {
+	const { firstname, lastname, email, mobile, password } = req.body;
+  
+	// Check if email is already registered
+	const existingUser = await User.findOne({ email: email });
+	if (existingUser) {
+	  res.status(400);
+	  throw new Error("Email address is already registered");
+	}
+	// Check if a profile image was uploaded
+	const file = req.file;
+	if (!file) {
+	  res.status(400);
+	  throw new Error("Please upload a profile image");
+	} else{
+	// Upload profile image to Cloudinary
+	const newPath = await cloudinaryUploadImg(file.path);
+	// Create new user with profile image URL
+	const newUser = await User.create({ 
+	  firstname,
+	  lastname,
+	  email,
+	  mobile,
+	  password,
+	  profileImage: newPath.url,
+	});
+	res.status(201).json({ message: "User created successfully", newUser });
+  };
+});  
 
 // Login a user
 const loginUser = asyncHandler(async (req, res) => {
@@ -245,6 +312,9 @@ res.json(user)
 
 module.exports = {
 	createUser,
+	upload,
+	multerFilter,
+	cloudinary,
 	loginUser,
 	getAllUsers,
 	getAUser,

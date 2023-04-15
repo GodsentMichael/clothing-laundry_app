@@ -13,12 +13,13 @@ const {
 	logoutUser,
 	updatePassword,
 	forgotPasswordToken,
-	resetPassword
+	resetPassword,upload, multerFilter,
 } = require('../controller/userCtrl');
 const { authMiddleware, isAdmin } = require('../middlewares/authMiddleware');
 const crypto = require("crypto");
 
-router.post('/register', createUser);
+router.post('/register',upload.single("profileImage"), createUser);
+// router.post('/register', uploader.single("file"), createUser);
 router.post('/forgot-password-token', forgotPasswordToken);
 router.put('/reset-password/:token', resetPassword);
 router.get('/refresh',refreshTokenHandler);

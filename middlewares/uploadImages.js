@@ -53,4 +53,4 @@ const laundryClothImgResize = async (req, res, next) => {
 	next();
 };
 
-module.exports = { uploadPhoto, clothImgResize, laundryClothImgResize };
+module.exports = { uploadPhoto, clothImgResize, laundryClothImgResize, multerFilter, storage };
