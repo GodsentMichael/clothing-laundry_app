@@ -13,7 +13,7 @@ const {
 	logoutUser,
 	updatePassword,
 	forgotPasswordToken,
-	resetPassword,upload, multerFilter,
+	resetPassword,upload,loginAdmin,getWishList,saveUserAddress,userCart,getUserCart,emptyCart ,multerFilter, applyPromoCode,
 } = require('../controller/userCtrl');
 const {uploadPhoto, profileImgResize} = require('../middlewares/uploadImages');
 const { authMiddleware, isAdmin } = require('../middlewares/authMiddleware');
@@ -23,14 +23,24 @@ router.post('/register',upload.single("profileImage"),profileImgResize, createUs
 // router.post('/register', uploader.single("file"), createUser);
 router.post('/forgot-password-token', forgotPasswordToken);
 router.put('/reset-password/:token', resetPassword);
-router.get('/refresh',refreshTokenHandler);
+
 router.put('/password',authMiddleware ,updatePassword);
 router.post('/login', loginUser);
-router.post('/logout', logoutUser);
+router.post('/admin-login', loginAdmin);
+router.post('/cart',authMiddleware, userCart);
+router.post('/cart/apply-promocode',authMiddleware,applyPromoCode);
+router.get('/all-cart',authMiddleware, getUserCart);
+router.delete('/empty-cart',authMiddleware, emptyCart);
 router.get('/all-users', getAllUsers);
+router.get('/refresh',refreshTokenHandler);
+
+router.post('/logout', logoutUser);
+router.get('/wishlist', authMiddleware, getWishList);
 router.get('/:id', authMiddleware,isAdmin, getAUser);
 router.delete('/:id', deleteAUser);
+
 router.put('/edit-user',authMiddleware, updatedUser);
+router.put('/save-address',authMiddleware, saveUserAddress);
 router.put('/block-user/:id',authMiddleware,isAdmin, blockUser);
 router.put('/unblock-user/:id',authMiddleware,isAdmin, unblockUser);
 

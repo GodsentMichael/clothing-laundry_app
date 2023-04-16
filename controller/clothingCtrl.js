@@ -17,8 +17,8 @@ const createClothOrder = asyncHandler(async (req, res) => {
 		const newClothOrder = await Clothing.create(req.body);
 		if (newClothOrder) {
 			res.json({
-				newClothOrder,
 				message: 'Cloth order successfully created',
+				newClothOrder,
 			});
 		} else {
 			throw new Error('Invalid clothOrder data, check your inputs!');

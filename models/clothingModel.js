@@ -19,6 +19,10 @@ const clothingSchema = new mongoose.Schema(
 			default: 0,
 			select: false,
 		},
+		price: {
+			type: Number,
+			required: true,
+		  },
 		numViews: {
 			type: Number,
 			default: 0,

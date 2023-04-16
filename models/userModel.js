@@ -43,7 +43,7 @@ cart:{
     default:[]
 },
 profileImage: [],
-address:[{type:ObjectId, ref: "Address"}],
+address:{type:String},
 
 wishlist:[{type:ObjectId, ref: "Clothing"}],
 
