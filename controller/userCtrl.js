@@ -8,6 +8,7 @@ const sendEmail = require('./emailCtrl')
 const path = require('path');
 const crypto = require("crypto");
 const multer = require('multer');
+const fs = require("fs");
 const cloudinary = require('cloudinary').v2;
 
 // Set up Multer storage engine to store uploaded images temporarily on the server.
@@ -75,7 +76,10 @@ const createUser = asyncHandler(async (req, res) => {
 	  throw new Error("Please upload a profile image");
 	} else{
 	// Upload profile image to Cloudinary
+	const {path} = file;
 	const newPath = await cloudinaryUploadImg(file.path);
+	// fs.unlinkSync(path)
+	fs.unlinkSync(path.toString());
 	// Create new user with profile image URL
 	const newUser = await User.create({ 
 	  firstname,

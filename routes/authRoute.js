@@ -15,10 +15,11 @@ const {
 	forgotPasswordToken,
 	resetPassword,upload, multerFilter,
 } = require('../controller/userCtrl');
+const {uploadPhoto, profileImgResize} = require('../middlewares/uploadImages');
 const { authMiddleware, isAdmin } = require('../middlewares/authMiddleware');
 const crypto = require("crypto");
 
-router.post('/register',upload.single("profileImage"), createUser);
+router.post('/register',upload.single("profileImage"),profileImgResize, createUser);
 // router.post('/register', uploader.single("file"), createUser);
 router.post('/forgot-password-token', forgotPasswordToken);
 router.put('/reset-password/:token', resetPassword);

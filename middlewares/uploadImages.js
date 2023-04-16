@@ -35,11 +35,14 @@ const clothImgResize = async (req, res, next) => {
 				.toFormat('jpeg')
 				.jpeg({ quality: 90 })
 				.toFile(`public/images/clothes${file.filename}`);
+				fs.unlinkSync(`public/images/clothes${file.filename}`);
+				// fs.unlinkSync(path.join(__dirname, `../public/images/${file.filename}`));
+				
 		})
 	);
 	next();
 };
-const laundryClothImgResize = async (req, res, next) => {
+const profileImgResize = async (req, res, next) => {
 	if (!req.files) return next();
 	await Promise.all(
 		req.files.map(async (file) => {
@@ -47,10 +50,12 @@ const laundryClothImgResize = async (req, res, next) => {
 				.resize(300, 300)
 				.toFormat('jpeg')
 				.jpeg({ quality: 90 })
-				.toFile(`public/images/laundry${file.filename}`);
+				.toFile(`public/images/profile${file.filename}`);
+				fs.unlinkSync(`public/images/profile${file.filename}`);
+
 		})
 	);
 	next();
 };
 
-module.exports = { uploadPhoto, clothImgResize, laundryClothImgResize, multerFilter, storage };
+module.exports = { uploadPhoto, clothImgResize, profileImgResize, multerFilter, storage };

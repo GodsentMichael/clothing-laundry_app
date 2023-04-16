@@ -5,6 +5,7 @@ const Clothing = require('../models/clothingModel');
 const path = require('path');
 const cloudinaryUploadImg = require('../utils/cloudinary');
 const { validateMongoDbId } = require('../utils/validateMongoId');
+const fs = require("fs");
 const dotenv = require('dotenv').config();
 
 // To create Fabrics Order.
@@ -348,6 +349,7 @@ const uploadImages = asyncHandler(async (req, res) => {
 			const {path} = file;
 			const newPath = await uploader(path);
 			urls.push(newPath);
+			fs.unlinkSync(path)
 		}
 		const findCloth = await Clothing.findByIdAndUpdate(
 			id,
