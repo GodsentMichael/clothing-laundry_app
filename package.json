@@ -33,6 +33,7 @@
     "nodemailer": "^6.9.1",
     "nodemon": "^2.0.22",
     "sharp": "^0.32.0",
-    "slugify": "^1.6.6"
+    "slugify": "^1.6.6",
+    "uniqid": "^5.4.0"
   }
 }

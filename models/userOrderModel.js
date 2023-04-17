@@ -3,9 +3,9 @@ const ObjectId = require('mongoose').Types.ObjectId;
 
 // Declare the Schema of the Mongo model
 const orderSchema = new mongoose.Schema({
-   products: [
+   clothings: [
          {
-            product: { type: mongoose.Schema.Types.ObjectId,
+            clothing: { type: mongoose.Schema.Types.ObjectId,
             ref: "Clothing",//"LaundryOrder"
          },
          count: Number,

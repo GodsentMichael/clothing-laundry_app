@@ -21,6 +21,9 @@ const promoCodeSchema = new mongoose.Schema({
         type:Boolean,
         default:false,
     },
+    promoCode: {
+        type: String
+    },
 });
 
 //Export the model

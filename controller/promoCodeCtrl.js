@@ -2,10 +2,25 @@ const PromoCode = require('../models/promoCodeModel');
 const { validateMongoDbId } = require('../utils/validateMongoId');
 const asyncHandler = require('express-async-handler');
 
+// To generate a unique promo code
+// const generatePromoCode = () => {
+//     let promoCode = '';
+//     const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+//     // Loop through the possible characters and add them to the promo code
+//     for (let i = 0; i < 6; i++) {
+//         promoCode += possible.charAt(Math.floor(Math.random() * possible.length));
+//     }
+
+//     return promoCode;
+
+// };
+
 // To create Promo Code.
 const createPromoCode = asyncHandler(async (req, res) => {
+    const { name, expiry, discount } = req.body;
+      
     try {
-        const newPromoCode = await PromoCode.create(req.body);
+       const newPromoCode = await PromoCode.create(req.body);
         if (newPromoCode) {
             res.json({
                 message: 'Promo code successfully created',

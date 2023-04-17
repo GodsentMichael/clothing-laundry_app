@@ -1,5 +1,5 @@
 const User = require('../models/userModel');
-const Order = require('../models/orderModel');
+const Order = require('../models/userOrderModel');
 const Clothing = require('../models/clothingModel');
 const Cart = require('../models/cartModel');
 const PromoCode = require('../models/promoCodeModel');
@@ -180,7 +180,7 @@ const getAUser = asyncHandler(async (req, res) => {
 	validateMongoDbId(id);
 	try {
 		const getAUser = await User.findById(id);
-		res.json({getAUser});
+		res.json({ getAUser });
 	} catch (error) {
 		throw new Error('User not found');
 	}
@@ -395,7 +395,7 @@ const userCart = asyncHandler(async (req, res) => {
 	validateMongoDbId(_id);
 	try {
 		let clothings = [];
-		const user = await User.findById(_id)//.populate('cart');
+		const user = await User.findById(_id); //.populate('cart');
 		//Confirm if user already have cloth in cart
 		const alreadyInCart = await Cart.findOne({ orderedBy: user?._id });
 		if (alreadyInCart) {
@@ -433,13 +433,13 @@ const userCart = asyncHandler(async (req, res) => {
 			orderedBy: user?._id,
 		}).save();
 
-			// Retrieve the updated Cart instance with populated clothings array
-			const updatedCart = await Cart.findById(newCart._id).populate({
-				path: 'clothings.clothing',
-				model: 'Clothing',
-			});
+		// Retrieve the updated Cart instance with populated clothings array
+		const updatedCart = await Cart.findById(newCart._id).populate({
+			path: 'clothings.clothing',
+			model: 'Clothing',
+		});
 
-			// Assign the populated clothings array to the user's cart property
+		// Assign the populated clothings array to the user's cart property
 		user.cart = updatedCart.clothings;
 		await user.save();
 
@@ -517,47 +517,46 @@ const emptyCart = asyncHandler(async (req, res) => {
 // });
 
 const applyPromoCode = asyncHandler(async (req, res) => {
-    const { promocode } = req.body;
-    try {
-        // Find the promocode in DB
-        const isValidCode = await PromoCode.findOne({name: promocode});
-        if (!isValidCode || isValidCode === undefined || isValidCode === null) {
-            throw new Error('Invalid Promo Code');
-        }
+	const { promocode } = req.body;
+	try {
+		// Find the promocode in DB
+		const isValidCode = await PromoCode.findOne({ name: promocode });
+		if (!isValidCode || isValidCode === undefined || isValidCode === null) {
+			throw new Error('Invalid Promo Code');
+		}
 		// Confirm the user using the promocode.
-        const user = await User.findById(req.user._id);
-        const cart = await Cart.findOne({ orderedBy: user._id }).populate({
-            path: 'clothings.clothing',
-            select: '_id price',
-        });
+		const user = await User.findById(req.user._id);
+		const cart = await Cart.findOne({ orderedBy: user._id }).populate({
+			path: 'clothings.clothing',
+			select: '_id price',
+		});
 		console.log(cart);
 
-        if (!cart) {
-            throw new Error('Cart not found');
-        }
+		if (!cart) {
+			throw new Error('Cart not found');
+		}
 
-        const { cartTotal, clothings } = cart;
+		const { cartTotal, clothings } = cart;
 		// Calculating the discount applied by the promocode.
-        const totalAfterDiscount = (
-            cartTotal -
-            (cartTotal * isValidCode.discount) / 100
-        ).toFixed(2);
+		const totalAfterDiscount = (
+			cartTotal -
+			(cartTotal * isValidCode.discount) / 100
+		).toFixed(2);
 		//Now update the cart with the new total after discount.
-        await Cart.findOneAndUpdate(
-            { orderedBy: user._id },
-            { $set: { totalAfterDiscount } },
-            { new: true }
-        );
+		await Cart.findOneAndUpdate(
+			{ orderedBy: user._id },
+			{ $set: { totalAfterDiscount } },
+			{ new: true }
+		);
 
-        res.json({
-            message: 'Successfully updated the cart with the promo code',
-            totalAfterDiscount,
-        });
-    } catch (error) {
-   throw new Error(error);
-    }
+		res.json({
+			message: 'Successfully updated the cart with the promo code',
+			totalAfterDiscount,
+		});
+	} catch (error) {
+		throw new Error(error);
+	}
 });
-
 
 module.exports = {
 	createUser,

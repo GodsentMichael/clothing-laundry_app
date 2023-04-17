@@ -17,7 +17,8 @@ const {
 } = require('../controller/userCtrl');
 const {uploadPhoto, profileImgResize} = require('../middlewares/uploadImages');
 const { authMiddleware, isAdmin } = require('../middlewares/authMiddleware');
-const crypto = require("crypto");
+const { createOrder } = require('../controller/userOrderCtrl');
+// const crypto = require("crypto");
 
 router.post('/register',upload.single("profileImage"),profileImgResize, createUser);
 // router.post('/register', uploader.single("file"), createUser);
@@ -28,6 +29,7 @@ router.put('/password',authMiddleware ,updatePassword);
 router.post('/login', loginUser);
 router.post('/admin-login', loginAdmin);
 router.post('/cart',authMiddleware, userCart);
+// router.post('/cart/cash-order',authMiddleware, createOrder);
 router.post('/cart/apply-promocode',authMiddleware,applyPromoCode);
 router.get('/all-cart',authMiddleware, getUserCart);
 router.delete('/empty-cart',authMiddleware, emptyCart);
