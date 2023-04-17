@@ -1,7 +1,7 @@
 const mongoose = require('mongoose'); // Erase if already required
 
 // Declare the Schema of the Mongo model
-var cartSchema = new mongoose.Schema({
+const cartSchema = new mongoose.Schema({
  clothings: [
         {
            clothing: { type: mongoose.Schema.Types.ObjectId,

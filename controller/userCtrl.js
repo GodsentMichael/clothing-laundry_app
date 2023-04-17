@@ -176,11 +176,11 @@ const getAllUsers = asyncHandler(async (req, res) => {
 // To get a single user
 
 const getAUser = asyncHandler(async (req, res) => {
+	const { id } = req.params;
+	validateMongoDbId(id);
 	try {
-		const getAUser = await User.findById(req.params.id);
-		validateMongoDbId(id);
-		// console.log(req.params.id);
-		res.json(getAUser);
+		const getAUser = await User.findById(id);
+		res.json({getAUser});
 	} catch (error) {
 		throw new Error('User not found');
 	}
@@ -387,7 +387,7 @@ const getWishList = asyncHandler(async (req, res) => {
 	}
 });
 
-// To Create user's cart functionality
+// To Create add to user's cart functionality.
 const userCart = asyncHandler(async (req, res) => {
 	const { _id } = req.user;
 	const { cart } = req.body;
@@ -395,7 +395,7 @@ const userCart = asyncHandler(async (req, res) => {
 	validateMongoDbId(_id);
 	try {
 		let clothings = [];
-		const user = await User.findById(_id); //.populate('cart');
+		const user = await User.findById(_id)//.populate('cart');
 		//Confirm if user already have cloth in cart
 		const alreadyInCart = await Cart.findOne({ orderedBy: user?._id });
 		if (alreadyInCart) {
@@ -432,6 +432,17 @@ const userCart = asyncHandler(async (req, res) => {
 			cartTotal,
 			orderedBy: user?._id,
 		}).save();
+
+			// Retrieve the updated Cart instance with populated clothings array
+			const updatedCart = await Cart.findById(newCart._id).populate({
+				path: 'clothings.clothing',
+				model: 'Clothing',
+			});
+
+			// Assign the populated clothings array to the user's cart property
+		user.cart = updatedCart.clothings;
+		await user.save();
+
 		res.json({ message: 'Cart Items', newCart });
 	} catch (error) {
 		throw new Error(error);
@@ -470,39 +481,83 @@ const emptyCart = asyncHandler(async (req, res) => {
 });
 
 // To apply the promocodes to user's cart.
+// const applyPromoCode = asyncHandler(async (req, res) => {
+// 	const { promocode } = req.body;
+// 	try {
+// 		//Find the code in DB
+// 		const isValidCode = await PromoCode.findOne({ name: promocode }); //.populate('clothing');});
+// 		if (isValidCode) {
+// 			// res.json({ message: 'This is a valid Promo Code', isValidCode });
+// 			// console.log(isValidCode);
+// 		} else if (isValidCode === null) {
+// 			throw new Error('Invalid Promo Code');
+// 		}
+// 		const user = await User.findOne({ _id: req.user?._id });
+// 		// console.log(user);
+// 		let { cartTotal,clothings } = await Cart.findOne({
+// 			orderedBy: req.user?._id,
+// 		}).populate('clothings.clothing'); // '_id title price').exec();
+// 		console.log(orderedBy);
+// 		let totalAfterDiscount = (
+// 			cartTotal -
+// 			(cartTotal * isValidCode.discount) / 100
+// 		).toFixed(2);
+// 		Cart.findOneAndUpdate(
+// 			{ orderedBy: req.user?._id },
+// 			{ totalAfterDiscount },
+// 			{ new: true }
+// 		); //.exec();
+// 		res.json({
+// 			message: 'Successfully updated the cart with the promo code',
+// 			totalAfterDiscount,
+// 		});
+// 	} catch (error) {
+// 		throw new Error(error);
+// 	}
+// });
+
 const applyPromoCode = asyncHandler(async (req, res) => {
-	const { promocode } = req.body;
-	try {
-		//Find the code in DB
-		const isValidCode = await PromoCode.findOne({ name: promocode }); //.populate('clothing');});
-		if (isValidCode) {
-			res.json({ message: 'This is a valid Promo Code', isValidCode });
-			console.log(isValidCode);
-		} else if (isValidCode === null) {
-			throw new Error('Invalid Promo Code');
-		}
-		const user = await User.findOne({ _id: req.user._id });
-		let { cartTotal, } = await Cart.findOne({
-			orderedBy: user._id,
-		}).populate('clothings.clothing'); // '_id title price').exec();
-		console.log(orderedBy);
-		let totalAfterDiscount = (
-			cartTotal -
-			(cartTotal * isValidCode.discount) / 100
-		).toFixed(2);
-		Cart.findOneAndUpdate(
-			{ orderedBy: user._id },
-			{ totalAfterDiscount },
-			{ new: true }
-		); //.exec();
-		res.json({
-			message: 'Successfully updated the cart with the promo code',
-			totalAfterDiscount,
-		});
-	} catch (error) {
-		throw new Error(error);
-	}
+    const { promocode } = req.body;
+    try {
+        // Find the promocode in DB
+        const isValidCode = await PromoCode.findOne({name: promocode});
+        if (!isValidCode || isValidCode === undefined || isValidCode === null) {
+            throw new Error('Invalid Promo Code');
+        }
+		// Confirm the user using the promocode.
+        const user = await User.findById(req.user._id);
+        const cart = await Cart.findOne({ orderedBy: user._id }).populate({
+            path: 'clothings.clothing',
+            select: '_id price',
+        });
+		console.log(cart);
+
+        if (!cart) {
+            throw new Error('Cart not found');
+        }
+
+        const { cartTotal, clothings } = cart;
+		// Calculating the discount applied by the promocode.
+        const totalAfterDiscount = (
+            cartTotal -
+            (cartTotal * isValidCode.discount) / 100
+        ).toFixed(2);
+		//Now update the cart with the new total after discount.
+        await Cart.findOneAndUpdate(
+            { orderedBy: user._id },
+            { $set: { totalAfterDiscount } },
+            { new: true }
+        );
+
+        res.json({
+            message: 'Successfully updated the cart with the promo code',
+            totalAfterDiscount,
+        });
+    } catch (error) {
+   throw new Error(error);
+    }
 });
+
 
 module.exports = {
 	createUser,
