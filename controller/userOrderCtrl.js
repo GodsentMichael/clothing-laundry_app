@@ -53,7 +53,7 @@ const createOrder = asyncHandler(async (req, res) => {
 
 //To get all orders
 const getAllOrders = asyncHandler(async (req, res) => {
-	const { _id } = req.user;
+	// const { _id } = req.user;
 	// validateMongoDbId(_id);
 	try {
 		const userOrders = await Order.find({})

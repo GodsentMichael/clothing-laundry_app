@@ -395,12 +395,12 @@ const userCart = asyncHandler(async (req, res) => {
 	validateMongoDbId(_id);
 	try {
 		let clothings = [];
-		const user = await User.findById(_id); //.populate('cart');
+		const user = await User.findById(_id).populate('cart');
 		//Confirm if user already have cloth in cart
 		const alreadyInCart = await Cart.findOne({ orderedBy: user?._id });
 		if (alreadyInCart) {
 			await Cart.deleteOne({ _id: alreadyInCart._id });
-			console.log('removed old cart');
+			// console.log('removed old cart');
 		}
 		// Loop through each item and push into clothing array
 		for (let i = 0; i < cart.length; i++) {

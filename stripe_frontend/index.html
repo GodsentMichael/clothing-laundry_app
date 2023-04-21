@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paystack payment page.</title>
+    <script src="https://js.paystack.co/v1/inline.js"></script>
+ 
+</head>
+<script src="https://js.paystack.co/v1/inline.js"></script> 
+<body>
+  <form>
+    <script src="https://js.paystack.co/v1/inline.js"></script>
+    <button type="button" onclick="payWithPaystack()"> Make payment </button> 
+  </form>
+  <input type="hidden" value="1000" id="amount">
+ </body>
+
+<script>
+  
+  function payWithPaystack(){
+    var totalPrice = document.getElementById('amount').value;
+  alert(totalPrice);
+    var handler = PaystackPop.setup({
+      key: 'pk_test_2678cd4f3da16cb3612f5714361cc0ab4d360b75',
+      email: 'gentlemotivator@gmail.com',
+      // amount: `{{ totalPrice }}`,
+      amount: `${ totalPrice }` * 100,
+      currency: "NGN",
+      ref: ''+Math.floor((Math.random() * 1000000000) + 1), // generates a pseudo-unique reference. Please replace with a reference you generated. Or remove the line entirely so our API will generate one for you
+      metadata: {
+         custom_fields: [
+            {
+                display_name: "Mobile Number",
+                variable_name: "mobile_number",
+                value: "+2348012345678"
+            }
+         ]
+      },
+      callback: function(response){
+          alert('success. transaction ref is ' + response.reference);
+      },
+      onClose: function(){
+          alert('window closed');
+      }
+    });
+    handler.openIframe();
+  }
+</script>
+</html>

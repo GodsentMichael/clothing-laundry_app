@@ -29,6 +29,10 @@ const userSchema = new mongoose.Schema({
         type:String,
         required:true,
     },
+    // reference: {
+    //     type: String,
+    //     required: true
+    // },
    role:{
         type:String,
         default:"user",
@@ -43,6 +47,8 @@ cart:{
     default:[]
 },
 profileImage: [],
+
+
 address:{type:String},
 
 wishlist:[{type:ObjectId, ref: "Clothing"}],
