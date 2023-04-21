@@ -388,82 +388,168 @@ const getWishList = asyncHandler(async (req, res) => {
 });
 
 // To Create add to user's cart functionality.
+// const userCart = asyncHandler(async (req, res) => {
+// 	const { _id } = req.user;
+// 	const { cart } = req.body;
+// 	// console.log(_id);
+// 	validateMongoDbId(_id);
+// 	try {
+// 		let clothings = [];
+		
+// 		//If product already exists in cart
+// 		alreadyExistCloth = clothings.map((clothing) => {
+// 			return clothings._id
+// 		});
+// 		if( alreadyExistCloth){
+// 			const clothing = await Cart.findOne({ _id:clothings._id });
+// 			res.json({message: 'Item already exists in cart'})
+// 		}
+// 		const user = await User.findById(_id).populate('cart');
+// 		//Confirm if user already have cloth in cart
+// 		const alreadyInCart = await Cart.findOne({ orderedBy: user?._id });
+// 		if (alreadyInCart) {
+// 			await Cart.deleteOne({ _id: alreadyInCart._id });
+// 			// console.log('removed old cart');
+// 		}
+
+		
+		
+// 		// Loop through each item and push into clothing array
+// 		for (let i = 0; i < cart.length; i++) {
+// 			let object = {};
+// 			object.clothing = cart[i]._id;
+// 			object.count = cart[i].count;
+// 			object.color = cart[i].color;
+// 			// To get price for creating total item in cart.
+// 			let getPrice = await Clothing.findById(cart[i]._id)
+// 				.select('price')
+// 				.exec();
+// 			if (getPrice) {
+// 				object.price = getPrice.price;
+// 			} else {
+// 				throw new Error('Clothing not found');
+// 			}
+// 			clothings.push(object);
+// 		}
+// 		// To Find the cart total
+// 		let cartTotal = 0;
+// 		for (let i = 0; i < clothings.length; i++) {
+// 			cartTotal = cartTotal + clothings[i].price * clothings[i].count;
+// 		}
+// 		// console.log(clothings, cartTotal);
+
+// 		// Then create and save the cart with the available data from above.
+// 		let newCart = await new Cart({
+// 			clothings,
+// 			cartTotal,
+// 			orderedBy: user?._id,
+// 		}).save();
+
+// 		// Retrieve the updated Cart instance with populated clothings array
+// 		const updatedCart = await Cart.findById(newCart._id).populate({
+// 			path: 'clothings.clothing',
+// 			model: 'Clothing',
+// 		});
+
+// 		// Assign the populated clothings array to the user's cart property
+// 		user.cart = updatedCart.clothings;
+// 		await user.save();
+
+// 		res.json({ message: 'Cart Items', newCart });
+
+// 	} catch (error) {
+// 		throw new Error(error);
+// 	}
+// });
+
 const userCart = asyncHandler(async (req, res) => {
 	const { _id } = req.user;
 	const { cart } = req.body;
 	// console.log(_id);
 	validateMongoDbId(_id);
 	try {
-		let clothings = [];
-		const user = await User.findById(_id).populate('cart');
-		//Confirm if user already have cloth in cart
-		const alreadyInCart = await Cart.findOne({ orderedBy: user?._id });
-		if (alreadyInCart) {
-			await Cart.deleteOne({ _id: alreadyInCart._id });
-			// console.log('removed old cart');
+	  let clothings = [];
+	  const user = await User.findById(_id).populate('cart');
+	  //Confirm if user already has a cart
+	  const alreadyInCart = await Cart.findOne({ orderedBy: user?._id });
+	  if (alreadyInCart) {
+		await Cart.deleteOne({ _id: alreadyInCart._id });
+		// console.log('removed old cart');
+	  }
+  
+	  // Loop through each item and push into clothing array
+	  for (let i = 0; i < cart.length; i++) {
+		let object = {};
+		object.clothing = cart[i]._id;
+		object.count = cart[i].count;
+		object.color = cart[i].color;
+		// To get price for creating total item in cart.
+		let getPrice = await Clothing.findById(cart[i]._id)
+		  .select('price')
+		  .exec();
+		if (getPrice) {
+		  object.price = getPrice.price;
+		} else {
+		  throw new Error('Clothing not found');
 		}
-		// Loop through each item and push into clothing array
-		for (let i = 0; i < cart.length; i++) {
-			let object = {};
-			object.clothing = cart[i]._id;
-			object.count = cart[i].count;
-			object.color = cart[i].color;
-			// To get price for creating total item in cart.
-			let getPrice = await Clothing.findById(cart[i]._id)
-				.select('price')
-				.exec();
-			if (getPrice) {
-				object.price = getPrice.price;
-			} else {
-				throw new Error('Clothing not found');
-			}
-			clothings.push(object);
+		// Check if clothing already exists in the cart
+		const existingClothing = clothings.find((item) => item.clothing.toString() === object.clothing.toString());
+		if (existingClothing) {
+		  throw new Error('Clothing already exists in cart');
 		}
-		// To Find the cart total
-		let cartTotal = 0;
-		for (let i = 0; i < clothings.length; i++) {
-			cartTotal = cartTotal + clothings[i].price * clothings[i].count;
-		}
-		// console.log(clothings, cartTotal);
-
-		// Then create and save the cart with the available data from above.
-		let newCart = await new Cart({
-			clothings,
-			cartTotal,
-			orderedBy: user?._id,
-		}).save();
-
-		// Retrieve the updated Cart instance with populated clothings array
-		const updatedCart = await Cart.findById(newCart._id).populate({
-			path: 'clothings.clothing',
-			model: 'Clothing',
-		});
-
-		// Assign the populated clothings array to the user's cart property
-		user.cart = updatedCart.clothings;
-		await user.save();
-
-		res.json({ message: 'Cart Items', newCart });
+		clothings.push(object);
+	  }
+	  // To Find the cart total
+	  let cartTotal = 0;
+	  for (let i = 0; i < clothings.length; i++) {
+		cartTotal = cartTotal + clothings[i].price * clothings[i].count;
+	  }
+	  // console.log(clothings, cartTotal);
+  
+	  // Then create and save the cart with the available data from above.
+	  let newCart = await new Cart({
+		clothings,
+		cartTotal,
+		orderedBy: user?._id,
+	  }).save();
+  
+	  // Retrieve the updated Cart instance with populated clothings array
+	  const updatedCart = await Cart.findById(newCart._id).populate({
+		path: 'clothings.clothing',
+		model: 'Clothing',
+	  });
+  
+	  // Assign the populated clothings array to the user's cart property
+	  user.cart = updatedCart.clothings;
+	  await user.save();
+  
+	  res.json({ message: 'Cart Items', newCart });
 	} catch (error) {
-		throw new Error(error);
+	  throw new Error(error);
 	}
-});
+  });
+  
 
 //To get user cart
+
 const getUserCart = asyncHandler(async (req, res) => {
 	const { _id } = req.user;
 	validateMongoDbId(_id);
 	try {
-		// Now find a particular cloth and display its contents from the clothID ref Clothing Model, when all items are fetched.
-		const cart = await Cart.findOne({ orderedBy: _id }).populate(
-			'clothings.clothing'
-		); //'_id title price totalAfterDiscount').exec();
-		console.log(cart);
-		res.json({ message: 'Successfully fetched all user carts', cart });
+	  // Now find a particular cloth and display its contents from the clothID ref Clothing Model, when all items are fetched.
+	  const cart = await Cart.findOne({ orderedBy: _id }).populate("clothings.clothing").populate(
+		{
+		  path: 'orderedBy',
+		  select: 'firstname lastname',
+		}
+	  ).exec();
+	  console.log(cart);
+	  res.json({ message: 'Successfully fetched all user carts', cart });
 	} catch (error) {
-		throw new Error(error);
+	  throw new Error(error);
 	}
-});
+  });
+  
 
 // To empty the user cart
 const emptyCart = asyncHandler(async (req, res) => {

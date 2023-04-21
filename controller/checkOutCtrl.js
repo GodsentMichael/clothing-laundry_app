@@ -53,7 +53,7 @@ const checkoutOrder = asyncHandler(async (req, res) => {
 			const transactionReference = body.data.reference;
                // Empty user's cart after successful payment and order creation.
                await Cart.findByIdAndDelete(userCart._id);
-			paystack.transaction.verify(transactionReference, function (error, body) {
+			paystack.transaction.verify(transactionReference,async function (error, body) {
                 if (error) {
                     console.log(error);
                     throw new Error(error);
@@ -62,19 +62,14 @@ const checkoutOrder = asyncHandler(async (req, res) => {
 				//Now save the successful order to Database.
 				const order = new Order({
 					user: user._id,
-					cartItems: userCart.items,
+					cartItems: userCart.clothings,
 					transaction_id: body.data.reference,
                     orderStatus: "Completed",
 					amount: body.data.amount / 100, // convert back to naira
 					status: 'paid',
 				});
-				const savedOrder = order.save();
-                // Empty user's cart after successful payment and order creation.
-                // await Cart.findByIdAndDelete(userCart._id);
-				// userCart.items = [];
-				// userCart.cartTotal = 0;
-				// userCart.totalAfterDiscount = 0;
-				// userCart.save();
+				const savedOrder = await order.save();
+            
 			});
 		});
 	} catch (error) {
