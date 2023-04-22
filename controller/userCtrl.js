@@ -7,6 +7,7 @@ const asyncHandler = require('express-async-handler');
 const { generateToken } = require('../config/jwtToken');
 const { validateMongoDbId } = require('../utils/validateMongoId');
 const { generateRefreshToken } = require('../config/refreshToken');
+const { Types } = require('mongoose');
 const jwt = require('jsonwebtoken');
 const sendEmail = require('./emailCtrl');
 const path = require('path');
@@ -549,6 +550,182 @@ const getUserCart = asyncHandler(async (req, res) => {
 	  throw new Error(error);
 	}
   });
+
+// To update the quantity of items in cart.
+// const updateUserCart = asyncHandler(async (req, res) => {
+// 	const {_id} = req.user;
+// 	const { clothId, count } = req.body;
+// 	const {id} = req.params;
+  
+// 	validateMongoDbId(_id);
+// 	validateMongoDbId(id);
+  
+// 	try {
+// 	  const user = await User.findById(_id).populate({
+// 		path: 'cart',
+// 		match: { _id: id },
+// 	  });
+// 	  if (!user) {
+// 		throw new Error('User not found');
+// 	  }
+// 	  let userCart = await Cart.findOne({ orderedBy: req.user }).exec();
+// 	  const cart = user.cart;
+// 	  console.log(cart);
+// 	  if (!cart) {
+// 		throw new Error('Cart not found');
+// 	  }
+  
+// 	  // Find the cart item to update
+// 	//   const cartItem = cart.find(
+// 	// 	item => item.clothing._id.equals(clothId)
+// 	//   );
+// 	//   if (!cartItem) {
+// 	// 	throw new Error('Item not found in cart');
+// 	//   }
+  
+// 	  // Update the count of the item and recalculate cart total
+// 	//   cartItem.count = count;
+// 	//   console.log(typeof cartItem.count)
+// 	//   let cartTotal = 0;
+// 	//   console.log(cart.forEach(item => {
+// 	// 	cartTotal += item.clothing.price * item.count;
+// 	//   }));
+
+// 	  // Loop through cart items
+// 	  cartItems = cart.forEach(async (item) => {
+// 		const { id, count } = item;
+  
+// 		// Find the item in the cart
+// 		const cartItem = user.cart.find((item) => item._id == id);
+  
+// 		if (cartItem) {
+// 		  // Update the count of the item
+// 		  cartItem.count = count;
+// 		}
+// 	  });
+  
+// 	  // Recalculate cart total
+// 	  let cartTotal = userCart.reduce(
+// 		(total, item) => total + item.clothing.price * item.count,
+// 		0
+// 	  );
+  
+// 	  // Update the user's cart total and save changes
+// 	  userCart.cartTotal = cartTotal;
+// 	  console.log(cartTotal)
+// 	  await user.save();
+  
+  
+// 	  // Save the updated cart to the database
+// 	  const updatedCart = await Cart.findByIdAndUpdate(
+// 		id,
+// 		{
+// 		  $set: { clothings: cart.clothings, cartTotal },
+// 		},
+// 		{ new: true }
+// 	  );
+  
+// 	  // Update the user's cart property with the updated cart
+// 	  user.cart = updatedCart.clothings;
+// 	  await user.save();
+  
+// 	  res.json({ message: 'Cart updated successfully', cart: updatedCart });
+// 	} catch (error) {
+// 	  throw new Error(error);
+// 	}
+//   });
+  
+// const updateUserCart = asyncHandler(async (req, res) => {
+// 	const { _id } = req.user;
+// 	const { clothId, count } = req.body;
+// 	const { id } = req.params;
+  
+// 	validateMongoDbId(_id);
+// 	validateMongoDbId(id);
+  
+// 	try {
+// 	  const user = await User.findById(_id)
+// 	  if (!user) {
+// 		throw new Error("User not found");
+// 	  }
+// 	  let userCart = await Cart.findOne({ orderedBy: req.user }).exec();
+// 	  console.log(userCart);
+// 	  if (!userCart) {
+// 		throw new Error("Cart not found");
+// 	  }
+  
+// 	 // Update the count of the item in the cart
+// userCart.clothings.forEach((item) => {
+// 	if (item._id == clothId) {
+// 	  item.count = count;
+// 	}
+//   });
+//   console.log(count)
+  
+//   // Save the updated cart to the database
+//   const updatedCart = await Cart.findOne(
+// 	id,
+// 	{ $inc: { count: count }},
+// 	{
+// 	  $set: { clothings: userCart.clothings },
+// 	},
+// 	{ new: true }
+//   );
+//   await userCart.save();
+//   // Update the user's cart property with the updated cart
+//   userCart = updatedCart;
+//   await user.save();
+  
+  
+  
+// 	  res.json({ message: "user cart updated successfully", userCart: updatedCart });
+// 	} catch (error) {
+// 	  throw new Error(error);
+// 	}
+//   });
+  
+const updateUserCart = asyncHandler(async (req, res) => {
+	const { _id } = req.user;
+	const { clothId, count } = req.body;
+	validateMongoDbId(_id);
+	validateMongoDbId(clothId);
+  
+	try {
+	  const user = await User.findById(_id);
+	  const cart = await Cart.findOne({ orderedBy: user._id }).populate({
+		path: 'clothings.clothing',
+		model: 'Clothing',
+	  });
+  
+	  // Find the index of the clothing item in the cart
+	  const itemIndex = cart.clothings.findIndex(
+		(item) => item.clothing._id.toString() === clothId
+	  );
+  
+	  if (itemIndex === -1) {
+		throw new Error('Clothing not found in cart');
+	  }
+  
+	  // Update the count of the clothing item in the cart
+	  cart.clothings[itemIndex].count = count;
+	  cart.cartTotal = cart.clothings.reduce(
+		(total, item) => total + item.clothing.price * item.count,
+		0
+			  );
+			  console.log(cart.cartTotal)
+	  await cart.save();
+  
+	  // Update the user's cart property with the updated cart instance
+	  user.cart = cart.clothings;
+	  await user.save();
+  
+	  res.json({ message: 'Cart item updated', cart: cart.clothings[itemIndex] });
+	} catch (error) {
+	  throw new Error(error);
+	}
+  });
+  
+   
   
 
 // To empty the user cart
@@ -668,4 +845,5 @@ module.exports = {
 	getUserCart,
 	emptyCart,
 	applyPromoCode,
+	updateUserCart
 };

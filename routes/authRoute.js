@@ -13,7 +13,7 @@ const {
 	logoutUser,
 	updatePassword,
 	forgotPasswordToken,
-	resetPassword,upload,loginAdmin,getWishList,saveUserAddress,userCart,getUserCart,emptyCart ,multerFilter, applyPromoCode,
+	resetPassword,upload,loginAdmin,getWishList,saveUserAddress,userCart,getUserCart,emptyCart ,multerFilter, applyPromoCode,updateUserCart,
 } = require('../controller/userCtrl');
 const {uploadPhoto, profileImgResize} = require('../middlewares/uploadImages');
 const { authMiddleware, isAdmin } = require('../middlewares/authMiddleware');
@@ -45,5 +45,6 @@ router.put('/edit-user',authMiddleware, updatedUser);
 router.put('/save-address',authMiddleware, saveUserAddress);
 router.put('/block-user/:id',authMiddleware,isAdmin, blockUser);
 router.put('/unblock-user/:id',authMiddleware,isAdmin, unblockUser);
+router.put('/cart/:id',authMiddleware,isAdmin,updateUserCart)
 
 module.exports = router;
